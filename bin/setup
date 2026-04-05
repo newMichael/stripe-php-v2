@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MODE="auto"
+SEED="yes"
+FORCE_ENV="no"
+
+usage() {
+	cat <<'EOF'
+Usage: bin/setup [--ddev|--local] [--no-seed] [--force-env]
+
+Options:
+  --ddev       Run setup commands via DDEV.
+  --local      Run setup commands directly on host machine.
+  --no-seed    Skip sqlite seed step.
+  --force-env  Replace existing .env with .env.example.
+  -h, --help   Show this help output.
+EOF
+}
+
+log() {
+	printf '[setup] %s\n' "$1"
+}
+
+need_cmd() {
+	local cmd="$1"
+	if ! command -v "$cmd" >/dev/null 2>&1; then
+		printf '[setup] Missing required command: %s\n' "$cmd" >&2
+		exit 1
+	fi
+}
+
+for arg in "$@"; do
+	case "$arg" in
+		--ddev) MODE="ddev" ;;
+		--local) MODE="local" ;;
+		--no-seed) SEED="no" ;;
+		--force-env) FORCE_ENV="yes" ;;
+		-h|--help)
+			usage
+			exit 0
+			;;
+		*)
+			printf '[setup] Unknown option: %s\n' "$arg" >&2
+			usage
+			exit 1
+			;;
+	esac
+done
+
+cd "$ROOT_DIR"
+
+if [[ "$MODE" == "auto" ]]; then
+	if command -v ddev >/dev/null 2>&1 && [[ -d ".ddev" ]]; then
+		MODE="ddev"
+	else
+		MODE="local"
+	fi
+fi
+
+if [[ "$FORCE_ENV" == "yes" || ! -f ".env" ]]; then
+	log "Creating .env from .env.example"
+	cp .env.example .env
+else
+	log ".env already exists (use --force-env to overwrite)"
+fi
+
+if [[ "$MODE" == "ddev" ]]; then
+	need_cmd ddev
+	log "Starting DDEV"
+	ddev start
+
+	log "Installing PHP dependencies (DDEV)"
+	ddev composer install
+
+	log "Installing Node dependencies (DDEV)"
+	ddev npm install
+
+	if [[ "$SEED" == "yes" ]]; then
+		log "Seeding sqlite (DDEV)"
+		ddev composer seed:sqlite
+	fi
+
+	cat <<'EOF'
+[setup] Done.
+[setup] Next:
+  1) ddev npm run dev
+  2) ddev launch
+EOF
+	exit 0
+fi
+
+need_cmd composer
+need_cmd npm
+
+log "Installing PHP dependencies (local)"
+composer install
+
+log "Installing Node dependencies (local)"
+npm install
+
+if [[ "$SEED" == "yes" ]]; then
+	log "Seeding sqlite (local)"
+	composer seed:sqlite
+fi
+
+cat <<'EOF'
+[setup] Done.
+[setup] Next:
+  1) npm run dev
+  2) php -S localhost:8080 -t public
+EOF

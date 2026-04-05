@@ -1,0 +1,10 @@
+/vendor/
+node_modules/
+public/build/
+storage/vite.hot
+storage/*.sqlite
+storage/*.log
+/.env
+.DS_Store
+.idea/
+.vscode/

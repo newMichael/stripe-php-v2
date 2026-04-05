@@ -1,0 +1,23 @@
+{
+    "require": {
+        "slim/slim": "^4",
+        "slim/psr7": "^1",
+        "slim/csrf": "^1.4",
+        "vlucas/phpdotenv": "^5",
+        "middlewares/trailing-slash": "^2.1",
+        "league/plates": "^3.5",
+        "league/container": "^4.2",
+        "monolog/monolog": "^3.0",
+        "symfony/mailer": "^7.4",
+        "symfony/error-handler": "^7.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "scripts": {
+        "seed:sqlite": "php bin/seed-sqlite.php",
+        "mail:test": "php bin/send-test-email.php"
+    }
+}
