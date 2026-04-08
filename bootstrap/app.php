@@ -28,7 +28,7 @@ $container = (new ContainerFactory())->create($config);
 AppFactory::setContainer($container);
 $app = AppFactory::create();
 if (!$container->has(RouteCollectorInterface::class)) {
-	$container->add(RouteCollectorInterface::class, static fn (): RouteCollectorInterface => $app->getRouteCollector());
+	$container->add(RouteCollectorInterface::class, static fn(): RouteCollectorInterface => $app->getRouteCollector());
 }
 
 (new ProjectExtensionRegistrar())->register($container, $app, $config, $projectExtensions);
@@ -41,6 +41,6 @@ if ($isDebug) {
 
 (new ErrorHandlerRegistrar())->register($app, $container, $isDebug);
 
-require __DIR__ . '/../src/routes.php';
+require __DIR__ . '/../src/App/routes.php';
 
 return $app;

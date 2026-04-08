@@ -1,4 +1,4 @@
-name: slim-skelly
+name: stripe-php-v2
 type: php
 docroot: public
 php_version: "8.3"

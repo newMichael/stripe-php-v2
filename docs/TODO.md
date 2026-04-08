@@ -1,0 +1,1 @@
+- [ ] Plan out the project
