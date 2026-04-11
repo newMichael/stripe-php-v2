@@ -15,7 +15,7 @@
 	"autoload": {
 		"psr-4": {
 			"App\\": "src/App/",
-			"FORM\\Ecommerce\\": "src/Form/Ecommerce/"
+			"FORM\\Ecommerce\\": "src/Ecommerce/"
 		}
 	},
 	"scripts": {

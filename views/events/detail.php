@@ -5,7 +5,7 @@
 	<h2>Tickets</h2>
 	<ul>
 		<?php foreach ($tickets as $ticket): ?>
-			<li><?= $this->e($ticket['ticket_title']) ?> - $<?= number_format($ticket['ticket_price'] / 100, 2) ?> USD</li>
+			<li><?= $this->e($ticket['ticket_title']) ?> - $<?= number_format($ticket['ticket_price'], 2) ?> USD</li>
 		<?php endforeach; ?>
 	</ul>
 
@@ -13,7 +13,7 @@
 		<label for="ticket-option-select">Select a Ticket</label>
 		<select name="ticket_option" id="ticket-option-select" required>
 			<?php foreach ($tickets as $ticket): ?>
-				<option value="<?= $this->e($ticket['ticket_id']) ?>"><?= $this->e($ticket['ticket_title']) ?> - $<?= number_format($ticket['ticket_price'] / 100, 2) ?> USD</option>
+				<option value="<?= $this->e($ticket['ticket_id']) ?>"><?= $this->e($ticket['ticket_title']) ?> - $<?= number_format($ticket['ticket_price'], 2) ?> USD</option>
 			<?php endforeach; ?>
 		</select>
 		<button id="register-button">Register</button>
@@ -24,7 +24,7 @@
 			<h2>Ticket Details</h2>
 			<div id="ticket-details-content"></div>
 
-			<form method="post" id="ticket-registration-form">
+			<form method="post" action="/events/cart/add" id="ticket-registration-form">
 				<input type="hidden" name="ticket_id" id="selected-ticket-id" value="">
 				<div>
 					<label>Quantity</label>
@@ -50,6 +50,29 @@
 	const ticketForm = document.getElementById('ticket-select-form');
 	const ticketSelect = document.getElementById('ticket-option-select');
 
+	const registrationForm = document.getElementById('ticket-registration-form');
+
+	registrationForm.addEventListener('submit', function(e) {
+		e.preventDefault();
+		const formData = new FormData(registrationForm);
+
+		fetch('/events/cart/add', {
+				method: 'POST',
+				body: formData
+			})
+			.then(response => response.json())
+			.then(data => {
+				if (data.success) {
+					dialog.close();
+					registrationForm.reset();
+					alert(`Added to cart! You have ${data.cartCount} ticket(s) in your cart.`);
+				} else {
+					alert(data.error ?? 'Something went wrong. Please try again.');
+				}
+			})
+			.catch(() => alert('Something went wrong. Please try again.'));
+	});
+
 	ticketForm.addEventListener('submit', function(e) {
 		e.preventDefault();
 		const selectedTicketId = ticketSelect.value;
@@ -57,6 +80,7 @@
 		fetch(`/events/ticket/${selectedTicketId}`)
 			.then(response => response.json())
 			.then(data => {
+				console.log('Fetched ticket details:', data);
 				showTicketDialog(data);
 			})
 			.catch(error => {
@@ -78,10 +102,11 @@
 	});
 
 	function showTicketDialog(ticketDetails) {
+		console.log(ticketDetails.ticket_price);
 		const contentDiv = document.getElementById('ticket-details-content');
 		contentDiv.innerHTML = `
 			<p><strong>Title:</strong> ${ticketDetails.ticket_title}</p>
-			<p><strong>Price:</strong> $${(ticketDetails.ticket_price / 100).toFixed(2)} USD</p>
+			<p><strong>Price:</strong> $${parseFloat(ticketDetails.ticket_price).toFixed(2)} USD</p>
 		`;
 		const selectedTicketIdInput = document.getElementById('selected-ticket-id');
 		selectedTicketIdInput.value = ticketDetails.ticket_id;

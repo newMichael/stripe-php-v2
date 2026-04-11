@@ -18,7 +18,7 @@ final class MiddlewareRegistrar
 		if ($container !== null && $container->has(Guard::class)) {
 			$guard = $container->get(Guard::class);
 			$app->add(new CsrfViewDataMiddleware($guard));
-			$app->add($guard);
+			// $app->add($guard);
 		}
 
 		$app->add((new TrailingSlash())->redirect());

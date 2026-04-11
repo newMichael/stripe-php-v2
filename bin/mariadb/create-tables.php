@@ -58,6 +58,8 @@ $pdo->exec(
 	'CREATE TABLE IF NOT EXISTS order_items (
 		item_id INT AUTO_INCREMENT PRIMARY KEY,
 		order_id INT NOT NULL,
+		item_type VARCHAR(50) NOT NULL,
+		reference_id INT NULL,
 		item_quantity INT NOT NULL,
 		item_price DECIMAL(10, 2) NOT NULL,
 		item_metadata JSON NULL,
@@ -92,6 +94,7 @@ $pdo->exec(
 	'CREATE TABLE IF NOT EXISTS subscriptions (
 		subscription_id INT AUTO_INCREMENT PRIMARY KEY,
 		stripe_subscription_id VARCHAR(255) NOT NULL,
+		stripe_customer_id VARCHAR(255) NOT NULL,
 		order_id INT NOT NULL,
 		patron_id INT NOT NULL,
 		subscription_title VARCHAR(100) NOT NULL,
@@ -102,6 +105,14 @@ $pdo->exec(
 		subscription_cancelled_at TIMESTAMP NULL,
 		FOREIGN KEY (order_id) REFERENCES orders(order_id),
 		FOREIGN KEY (patron_id) REFERENCES patrons(patron_id)
+	) ENGINE=InnoDB'
+);
+
+$pdo->exec(
+	'CREATE TABLE IF NOT EXISTS membership_levels (
+		membership_id INT AUTO_INCREMENT PRIMARY KEY,
+		membership_title VARCHAR(100) NOT NULL,
+		membership_price DECIMAL(10, 2) NOT NULL
 	) ENGINE=InnoDB'
 );
 

@@ -45,6 +45,8 @@ DROP TABLE IF EXISTS `order_items`;
 CREATE TABLE `order_items` (
   `item_id` int(11) NOT NULL AUTO_INCREMENT,
   `order_id` int(11) NOT NULL,
+  `item_type` varchar(50) NOT NULL,
+  `reference_id` int(11) DEFAULT NULL,
   `item_quantity` int(11) NOT NULL,
   `item_price` decimal(10,2) NOT NULL,
   `item_metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`item_metadata`)),
@@ -97,6 +99,7 @@ DROP TABLE IF EXISTS `subscriptions`;
 CREATE TABLE `subscriptions` (
   `subscription_id` int(11) NOT NULL AUTO_INCREMENT,
   `stripe_subscription_id` varchar(255) NOT NULL,
+  `stripe_customer_id` varchar(255) NOT NULL,
   `order_id` int(11) NOT NULL,
   `patron_id` int(11) NOT NULL,
   `subscription_title` varchar(100) NOT NULL,
@@ -110,6 +113,14 @@ CREATE TABLE `subscriptions` (
   KEY `patron_id` (`patron_id`),
   CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`),
   CONSTRAINT `subscriptions_ibfk_2` FOREIGN KEY (`patron_id`) REFERENCES `patrons` (`patron_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+DROP TABLE IF EXISTS `membership_levels`;
+CREATE TABLE `membership_levels` (
+  `membership_id` int(11) NOT NULL AUTO_INCREMENT,
+  `membership_title` varchar(100) NOT NULL,
+  `membership_price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`membership_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO `event_tickets` (`ticket_id`, `event_id`, `ticket_title`, `ticket_price`, `ticket_quantity`, `ticket_status`) VALUES
