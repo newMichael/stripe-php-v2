@@ -50,10 +50,12 @@
 	</table>
 
 	<div>
-		<form method="post" action="/cart/clear">
-			<button type="submit">Clear Cart</button>
-		</form>
+		<div role="group">
+			<form method="post" action="/cart/clear">
+				<button>Clear Cart</button>
+			</form>
 
-		<a href="/checkout" role="button">Proceed to Checkout</a>
+			<a href="/cart/checkout" role="button">Proceed to Checkout</a>
+		</div>
 	</div>
 <?php endif; ?>

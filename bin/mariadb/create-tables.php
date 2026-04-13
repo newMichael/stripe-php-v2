@@ -42,7 +42,7 @@ $pdo->exec(
 $pdo->exec(
 	'CREATE TABLE IF NOT EXISTS orders (
 		order_id INT AUTO_INCREMENT PRIMARY KEY,
-		patron_id INT NOT NULL,
+		patron_id INT NULL,
 		subscription_id INT NULL,
 		order_tax DECIMAL(10, 2) NOT NULL,
 		order_fee DECIMAL(10, 2) NOT NULL,
@@ -50,6 +50,7 @@ $pdo->exec(
 		order_subtotal DECIMAL(10, 2) NOT NULL,
 		order_total DECIMAL(10, 2) NOT NULL,
 		order_status VARCHAR(50) NOT NULL,
+		stripe_payment_intent_id VARCHAR(255) NULL,
 		order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	) ENGINE=InnoDB'
 );
@@ -105,6 +106,24 @@ $pdo->exec(
 		subscription_cancelled_at TIMESTAMP NULL,
 		FOREIGN KEY (order_id) REFERENCES orders(order_id),
 		FOREIGN KEY (patron_id) REFERENCES patrons(patron_id)
+	) ENGINE=InnoDB'
+);
+
+$pdo->exec(
+	'CREATE TABLE IF NOT EXISTS order_addresses (
+		address_id INT AUTO_INCREMENT PRIMARY KEY,
+		order_id INT NOT NULL,
+		address_type ENUM(\'billing\', \'shipping\') NOT NULL,
+		address_first_name VARCHAR(50) NULL,
+		address_last_name VARCHAR(50) NULL,
+		address_email VARCHAR(100) NULL,
+		address_line1 VARCHAR(255) NULL,
+		address_line2 VARCHAR(255) NULL,
+		address_city VARCHAR(100) NULL,
+		address_state VARCHAR(100) NULL,
+		address_postal_code VARCHAR(20) NULL,
+		address_country VARCHAR(2) NULL,
+		FOREIGN KEY (order_id) REFERENCES orders(order_id)
 	) ENGINE=InnoDB'
 );
 

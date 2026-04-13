@@ -17,7 +17,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Csrf\Guard;
+use Slim\Flash\Messages;
 use Slim\Psr7\Factory\ResponseFactory;
+use Stripe\StripeClient;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mailer\Transport;
@@ -46,7 +48,14 @@ final class ContainerFactory
 		$container->add(Logger::class, fn(): Logger => $this->loggerFactory->create($config));
 		$container->add(LoggerInterface::class, fn(): LoggerInterface => $container->get(Logger::class));
 		$container->add(PDO::class, fn(): PDO => $this->pdoFactory->create($config->database));
+		$container->add(StripeClient::class, function () {
+			$stripe = new StripeClient($_ENV['STRIPE_SECRET_KEY']);
+			$stripe->getStripeVersion('2026-03-25.dahlia');
+			return $stripe;
+		});
 		$container->add(MailerInterface::class, fn(): MailerInterface => new Mailer(Transport::fromDsn($config->mailerDsn)));
+		$container->add(Messages::class, fn(): Messages => new Messages());
+
 		if (class_exists(Guard::class)) {
 			$container->add(Guard::class, static function () use ($container): Guard {
 				$responseFactory = new ResponseFactory();

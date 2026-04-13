@@ -1,1 +1,6 @@
 @import "@picocss/pico/css/pico.min.css";
+
+.stack {
+	display: grid;
+	gap: 20px;
+}

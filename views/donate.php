@@ -4,38 +4,41 @@
 	<h1>Donate Online</h1>
 	<p>Use the form below to make a donation online.</p>
 
-	<form method="post" action="/donate">
+	<form id="donate-form"
+		x-data="donateForm('<?= $this->e($stripePublishableKey) ?>')"
+		method="post" action="/donate"
+		@submit.prevent="handleSubmit()">
 		<fieldset>
 			<legend>Donation Amount</legend>
 			<?php foreach ([10, 25, 50, 100] as $preset): ?>
 				<label>
-					<input type="radio" name="amount" value="<?= $preset ?>">
+					<input type="radio" name="amount" value="<?= $preset ?>" x-model="amountOption">
 					$<?= $preset ?>
 				</label>
 			<?php endforeach; ?>
 			<label>
-				<input type="radio" name="amount" value="other">
+				<input type="radio" name="amount" value="other" x-model="amountOption">
 				Other
 			</label>
 
-			<div id="other-amount-wrapper">
+			<div x-show="showOtherAmount">
 				<label for="amount_other">Other Amount</label>
-				<input type="number" name="amount_other" id="amount_other" min="1" step="any">
+				<input type="number" name="amount_other" id="amount_other" min="1" step="any" x-model="otherAmount">
 			</div>
 		</fieldset>
 
 		<fieldset>
 			<legend>Frequency</legend>
 			<label>
-				<input type="radio" name="frequency" value="one-time" checked>
+				<input type="radio" name="frequency" value="one-time" x-model="frequencyOption">
 				One-Time
 			</label>
 			<label>
-				<input type="radio" name="frequency" value="monthly">
+				<input type="radio" name="frequency" value="monthly" x-model="frequencyOption">
 				Monthly
 			</label>
 			<label>
-				<input type="radio" name="frequency" value="yearly">
+				<input type="radio" name="frequency" value="yearly" x-model="frequencyOption">
 				Yearly
 			</label>
 		</fieldset>
@@ -53,12 +56,13 @@
 			<p>Offset processing fees and add an additonal <span id="fees-amount-display"></span></p>
 		</div>
 
-		<div id="stripe-fields">
+		<div id="stripe-fields" x-show="hasValidAmount">
 			<div data-stripe-link-auth></div>
 			<div data-stripe-address></div>
 			<div data-stripe-payment></div>
 		</div>
 
-		<button type="submit" disabled>Donate</button>
+		<button type="submit" :disabled="submitting || !hasValidAmount" x-text="submitting ? 'Processing...' : 'Donate'"></button>
+		<div x-show="message" x-text="message"></div>
 	</form>
 </section>

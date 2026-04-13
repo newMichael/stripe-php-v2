@@ -40,10 +40,10 @@ class OrderRepository
 			$this->pdo->prepare(
 				'INSERT INTO orders
 						(patron_id, subscription_id, order_tax, order_fee, order_discount,
-							order_subtotal, order_total, order_status)
+							order_subtotal, order_total, order_status, stripe_payment_intent_id)
 					VALUES
 						(:patron_id, :subscription_id, :order_tax, :order_fee, :order_discount,
-							:order_subtotal, :order_total, :order_status)'
+							:order_subtotal, :order_total, :order_status, :stripe_payment_intent_id)'
 			)->execute($params);
 
 			$orderId = (int) $this->pdo->lastInsertId();
@@ -58,6 +58,7 @@ class OrderRepository
 				subtotal: $order->subtotal,
 				total: $order->total,
 				status: $order->status,
+				stripePaymentIntentId: $order->stripePaymentIntentId,
 			);
 
 			$savedItems = [];
@@ -82,6 +83,31 @@ class OrderRepository
 		)->execute(['status' => $status->value, 'order_id' => $orderId]);
 	}
 
+	public function updatePaymentIntent(int $orderId, string $paymentIntentId): void
+	{
+		$this->pdo->prepare(
+			'UPDATE orders SET stripe_payment_intent_id = :payment_intent_id WHERE order_id = :order_id'
+		)->execute(['payment_intent_id' => $paymentIntentId, 'order_id' => $orderId]);
+	}
+
+	public function findByPaymentIntentId(string $paymentIntentId): ?Order
+	{
+		$stmt = $this->pdo->prepare(
+			'SELECT * FROM orders WHERE stripe_payment_intent_id = :payment_intent_id LIMIT 1'
+		);
+		$stmt->execute(['payment_intent_id' => $paymentIntentId]);
+		$row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+		if (!$row) {
+			return null;
+		}
+
+		$order = Order::fromRow($row);
+		$order->setItems($this->findItemsByOrderId($order->orderId));
+
+		return $order;
+	}
+
 	/** @return OrderItem[] */
 	public function findItemsByOrderId(int $orderId): array
 	{
@@ -94,6 +120,30 @@ class OrderRepository
 			fn(array $row) => OrderItem::fromRow($row),
 			$stmt->fetchAll(PDO::FETCH_ASSOC)
 		);
+	}
+
+	public function saveAddress(OrderAddress $address): void
+	{
+		$this->pdo->prepare(
+			'INSERT INTO order_addresses
+				(order_id, address_type, address_first_name, address_last_name, address_email,
+				 address_line1, address_line2, address_city, address_state, address_postal_code, address_country)
+			VALUES
+				(:order_id, :address_type, :address_first_name, :address_last_name, :address_email,
+				 :address_line1, :address_line2, :address_city, :address_state, :address_postal_code, :address_country)'
+		)->execute([
+			'order_id'           => $address->orderId,
+			'address_type'       => $address->addressType->value,
+			'address_first_name' => $address->addressFirstName,
+			'address_last_name'  => $address->addressLastName,
+			'address_email'      => $address->addressEmail,
+			'address_line1'      => $address->addressLine1,
+			'address_line2'      => $address->addressLine2,
+			'address_city'       => $address->addressCity,
+			'address_state'      => $address->addressState,
+			'address_postal_code' => $address->addressPostalCode,
+			'address_country'    => $address->addressCountry,
+		]);
 	}
 
 	private function insertItem(OrderItem $item, int $orderId): OrderItem

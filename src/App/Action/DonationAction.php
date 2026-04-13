@@ -16,6 +16,7 @@ final class DonationAction
 	{
 		$response->getBody()->write($this->templates->render('donate', [
 			'title' => 'Donate',
+			'stripePublishableKey' => $_ENV['STRIPE_PUBLIC_KEY'],
 		]));
 		return $response;
 	}

@@ -1,5 +1,6 @@
 ## Stripe Ecommerce Demo
 A PHP and JS application for building a light ecommerce system.
+Stripe API Version: 2026-03-25.dahlia
 
 ## Structure
 - `src/App/` — general application classes
@@ -14,4 +15,4 @@ A PHP and JS application for building a light ecommerce system.
 - PHP and JS files must use tab indentation
 
 ## Current Focus
-Initial planning of the project
+Implementing different checkout flows.

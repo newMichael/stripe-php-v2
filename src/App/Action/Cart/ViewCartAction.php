@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Action;
+namespace App\Action\Cart;
 
 use FORM\Ecommerce\Cart\Cart;
 use FORM\Ecommerce\Cart\EventTicketCartItem;
@@ -12,11 +12,11 @@ use PDO;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-final class CartAction
+final class ViewCartAction
 {
 	public function __construct(private readonly Engine $templates, private readonly PDO $db) {}
 
-	public function view(Request $request, Response $response): Response
+	public function __invoke(Request $request, Response $response): Response
 	{
 		$cart = new Cart(new SessionCartStorage());
 		$items = $cart->getItems();
@@ -34,12 +34,12 @@ final class CartAction
 				$row = $stmt->fetch(PDO::FETCH_ASSOC);
 
 				$enriched[] = [
-					'key'         => $item->key(),
-					'label'       => $row ? "{$row['ticket_title']} — {$row['event_title']}" : "Ticket #{$item->ticketId()}",
-					'quantity'    => $item->quantity(),
-					'price'       => $item->price(),
-					'subtotal'    => $item->subtotal(),
-					'attendees'   => $item->attendees(),
+					'key'       => $item->key(),
+					'label'     => $row ? "{$row['ticket_title']} — {$row['event_title']}" : "Ticket #{$item->ticketId()}",
+					'quantity'  => $item->quantity(),
+					'price'     => $item->price(),
+					'subtotal'  => $item->subtotal(),
+					'attendees' => $item->attendees(),
 				];
 			}
 		}
@@ -53,26 +53,5 @@ final class CartAction
 		);
 
 		return $response;
-	}
-
-	public function remove(Request $request, Response $response): Response
-	{
-		$body = (array) $request->getParsedBody();
-		$key  = (string) ($body['key'] ?? '');
-
-		if ($key !== '') {
-			$cart = new Cart(new SessionCartStorage());
-			$cart->remove($key);
-		}
-
-		return $response->withHeader('Location', '/cart')->withStatus(303);
-	}
-
-	public function clear(Request $request, Response $response): Response
-	{
-		$cart = new Cart(new SessionCartStorage());
-		$cart->clear();
-
-		return $response->withHeader('Location', '/cart')->withStatus(303);
 	}
 }

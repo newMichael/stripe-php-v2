@@ -13,6 +13,7 @@
 		<nav>
 			<ul>
 				<li><strong><a href="/">Dashboard</a></strong></li>
+				<li><strong><a href="/cart">Cart</a></strong></li>
 			</ul>
 		</nav>
 	</div>
